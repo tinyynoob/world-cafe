@@ -22,16 +22,11 @@ int main()
 {
     short round;
     printf("round: ");
-    scanf("%hd", &round);
+    //scanf("%hd", &round);
+    round = 7;
     srand(time(NULL));
     permu = permutation(round, &permu_size);
-    for (int i = 0; i < permu_size; i++) {
-        printf("permu[%d] = ", i);
-        for (int j = 0; j < round; j++)
-            printf("%hd ", permu[i][j]);
-        putchar('\n');
-    }
-    putchar('\n');
+    printf("permu_size = %d\n\n", permu_size);
 
     short **matrix = semi_sudoku(round);
     print_matrix(matrix, round);

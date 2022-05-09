@@ -1,5 +1,5 @@
 cc = gcc
-ccflags = 
+ccflags = -O2
 
 world_cafe: world_cafe.c permutation.c semi_sudoku.c
 	$(cc) $(ccflags) $^ -o $@
