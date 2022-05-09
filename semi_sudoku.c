@@ -1,7 +1,8 @@
-#include "semi_sudoku.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include "semi_sudoku.h"
 
 extern short **permu;
 extern int permu_size;
@@ -48,31 +49,6 @@ static struct su *su_init(short round)
     return su;
 }
 
-/* a solution is found if true is returned
- */
-static bool backtrack(struct su *su, int row)
-{
-    if (row == su->size) {  // end recursion
-        if (areColumnsValid(su))
-            return true;
-        else
-            return false;
-    }
-    int serial = row * su->pp - 1;  // -1 to compensate
-loop:;
-    for (serial++; serial < (row + 1) * su->pp; serial++) {
-        vector_copy(&su->matrix[row], &permu[serial], su->size);
-        for (int c = 1; c < su->size; c++)
-            if (su->matrix[row][c] == su->matrix[row - 1][c])  // quick check
-                goto loop;
-        if (backtrack(su, row + 1))
-            return true;
-        else
-            continue;
-    }
-    return false;
-}
-
 /* generate a sudoku without skew rule
  */
 short **semi_sudoku(short round)
@@ -83,7 +59,7 @@ short **semi_sudoku(short round)
      * Since column 0 is always increasing, matrix[0][0] must be 0 to guarantee
      * the existence of a solution.
      */
-    for (int r = 0; r < su->size - 2; r++) {
+    for (int r = 0; r < su->size - 1; r++) {
         int rng;
     regen:;
         rng = r * su->pp + ((unsigned) ((rand() << 16) | rand()) %
@@ -95,12 +71,12 @@ short **semi_sudoku(short round)
                     goto regen;
         }
     }
-    print_matrix(su->matrix, su->size);
-    puts("enter backtrack()...");
-    int row = su->size - 2 > 0 ? su->size - 2 : 0;
-    if (!backtrack(su, row))
-        perror("ERROR happened at backtrack()\n");
-    // backtrack success
+    for (int c = 0; c < su->size; c++) {
+        su->matrix[su->size - 1][c] = su->checkxor; // assume no truncation
+        for (int r = 0; r < su->size - 1; r++)
+            su->matrix[su->size - 1][c] ^= 1 << su->matrix[r][c];
+        su->matrix[su->size - 1][c] = ffs(su->matrix[su->size - 1][c]) - 1;
+    }
     short **ans = su->matrix;
     free(su);
     return ans;

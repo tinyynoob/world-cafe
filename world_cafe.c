@@ -21,9 +21,13 @@ void print_matrix(short **matrix, short round)
 int main()
 {
     short round;
-    printf("round: ");
-    // scanf("%hd", &round);
-    round = 9;
+    printf("round (1 ~ 10): ");
+    scanf("%hd", &round);
+    while (round <= 0 || round > 10) {
+        printf("1 ~ 10 plz: ");
+        scanf("%hd", &round);
+    }
+
     srand(time(NULL));
     permu = permutation(round, &permu_size);
     printf("permu_size = %d\n\n", permu_size);
