@@ -10,18 +10,12 @@ static struct su {
     short size;  // = round
     short **matrix;
     unsigned checkxor;
+    int pp;  // partial permutation
 };
 
-static bool isValid(const struct su *su)
+static bool areColumnsValid(const struct su *su)
 {
     unsigned check;
-    for (int r = 0; r < su->size; r++) {
-        check = su->checkxor;
-        for (int c = 0; c < su->size; c++)
-            check ^= 1u << su->matrix[r][c];
-        if (check)
-            return false;
-    }
     for (int c = 0; c < su->size; c++) {
         check = su->checkxor;
         for (int r = 0; r < su->size; r++)
@@ -48,40 +42,35 @@ static struct su *su_init(short round)
     su->checkxor = 0;
     for (int i = 0; i < su->size; i++)
         su->checkxor ^= 1u << i;
+    su->pp = 1;
+    for (int i = 1; i <= su->size - 1; i++)
+        su->pp *= i;
     return su;
 }
 
-/* Return value:
- * 0: success
- * 1: keep going
- * 2: cannot find a valid matrix
+/* a solution is found if true is returned
  */
-static int backtrack(struct su *su, int row, int serial)
+static bool backtrack(struct su *su, int row)
 {
-    // print_matrix(su->matrix, su->size);
     if (row == su->size) {  // end recursion
-        if (isValid(su))
-            return 0;
+        if (areColumnsValid(su))
+            return true;
         else
-            return 1;
+            return false;
     }
-loop:
-    for (serial++; serial < permu_size; serial++) {
+    int serial = row * su->pp - 1;  // compensate
+loop:;
+    for (serial++; serial < (row + 1) * su->pp; serial++) {
         vector_copy(&su->matrix[row], &permu[serial], su->size);
-        for (int c = 0; c < su->size; c++)
+        for (int c = 1; c < su->size; c++)
             if (su->matrix[row][c] == su->matrix[row - 1][c])  // quick check
                 goto loop;
-        int ret = backtrack(su, row + 1, serial);
-        if (ret == 1)
+        if (backtrack(su, row + 1))
+            return true;
+        else
             continue;
-        else if (ret == 0)
-            return 0;
     }
-
-    if (row == 1)
-        return 2;
-    else
-        return 1;
+    return false;
 }
 
 /* generate a sudoku without skew rule
@@ -89,20 +78,26 @@ loop:
 short **semi_sudoku(short round)
 {
     struct su *su = su_init(round);
-    /* Since column 0 is always increasing, matrix[0][0] must be 0 to guarantee
+    /* Random generate half of the matrix 
+     * Since column 0 is always increasing, matrix[0][0] must be 0 to guarantee
      * the existence of a solution.
      */
-    int pp = 1;  // partial permutation
-    for (int i = 1; i <= round - 1; i++)
-        pp *= i;
-    int start = rand() % pp;
-    printf("start = %d\n", start);
-    vector_copy(&su->matrix[0], &permu[start], su->size);
-    while (backtrack(su, 1, start) == 2) {
-        start = rand() % start;  // shrink the starting number and re-try
-        printf("start = %d\n", start);
-        vector_copy(&su->matrix[0], &permu[start], su->size);
+    for (int i = 0; i <= su->size >> 1; i++) {
+        int rng;
+regen:;
+        printf("i = %d\n", i);
+        rng = i * su->pp + (rand() % su->pp);   // matrix[i][0] is fixed
+        vector_copy(&su->matrix[i], &permu[rng], su->size);
+        for (int j = 0; j < i; j++) {
+            for (int c = 1; c < su->size; c++)  // compare from [ ][1]
+                if (su->matrix[i][c] == su->matrix[j][c])   // check validity
+                    goto regen;
+        }
     }
+    print_matrix(su->matrix, su->size);
+    puts("enter backtrack()...");
+    if (!backtrack(su, (su->size >> 1) + 1))
+        perror("ERROR happened at backtrack()\n");
     // backtrack success
     short **ans = su->matrix;
     free(su);
