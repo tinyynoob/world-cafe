@@ -58,7 +58,7 @@ static bool backtrack(struct su *su, int row)
         else
             return false;
     }
-    int serial = row * su->pp - 1;  // compensate
+    int serial = row * su->pp - 1;  // -1 to compensate
 loop:;
     for (serial++; serial < (row + 1) * su->pp; serial++) {
         vector_copy(&su->matrix[row], &permu[serial], su->size);
@@ -77,26 +77,28 @@ loop:;
  */
 short **semi_sudoku(short round)
 {
+    puts("enter semi_sudoku()...");
     struct su *su = su_init(round);
-    /* Random generate half of the matrix 
+    /* Random generate half of the matrix
      * Since column 0 is always increasing, matrix[0][0] must be 0 to guarantee
      * the existence of a solution.
      */
-    for (int i = 0; i <= su->size >> 1; i++) {
+    for (int r = 0; r < su->size - 2; r++) {
         int rng;
-regen:;
-        printf("i = %d\n", i);
-        rng = i * su->pp + (rand() % su->pp);   // matrix[i][0] is fixed
-        vector_copy(&su->matrix[i], &permu[rng], su->size);
-        for (int j = 0; j < i; j++) {
+    regen:;
+        rng = r * su->pp + ((unsigned) ((rand() << 16) | rand()) %
+                            su->pp);  // matrix[r][0] is fixed
+        vector_copy(&su->matrix[r], &permu[rng], su->size);
+        for (int j = 0; j < r; j++) {
             for (int c = 1; c < su->size; c++)  // compare from [ ][1]
-                if (su->matrix[i][c] == su->matrix[j][c])   // check validity
+                if (su->matrix[r][c] == su->matrix[j][c])  // check validity
                     goto regen;
         }
     }
     print_matrix(su->matrix, su->size);
     puts("enter backtrack()...");
-    if (!backtrack(su, (su->size >> 1) + 1))
+    int row = su->size - 2 > 0 ? su->size - 2 : 0;
+    if (!backtrack(su, row))
         perror("ERROR happened at backtrack()\n");
     // backtrack success
     short **ans = su->matrix;

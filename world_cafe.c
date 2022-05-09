@@ -22,8 +22,8 @@ int main()
 {
     short round;
     printf("round: ");
-    scanf("%hd", &round);
-    // round = 7;
+    // scanf("%hd", &round);
+    round = 9;
     srand(time(NULL));
     permu = permutation(round, &permu_size);
     printf("permu_size = %d\n\n", permu_size);
