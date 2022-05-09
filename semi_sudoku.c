@@ -1,8 +1,7 @@
+#include "semi_sudoku.h"
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "semi_sudoku.h"
 
 extern short **permu;
 extern int permu_size;
@@ -53,7 +52,6 @@ static struct su *su_init(short round)
  */
 short **semi_sudoku(short round)
 {
-    puts("enter semi_sudoku()...");
     struct su *su = su_init(round);
     /* Random generate half of the matrix
      * Since column 0 is always increasing, matrix[0][0] must be 0 to guarantee
@@ -72,7 +70,7 @@ short **semi_sudoku(short round)
         }
     }
     for (int c = 0; c < su->size; c++) {
-        su->matrix[su->size - 1][c] = su->checkxor; // assume no truncation
+        su->matrix[su->size - 1][c] = su->checkxor;  // assume no truncation
         for (int r = 0; r < su->size - 1; r++)
             su->matrix[su->size - 1][c] ^= 1 << su->matrix[r][c];
         su->matrix[su->size - 1][c] = ffs(su->matrix[su->size - 1][c]) - 1;
