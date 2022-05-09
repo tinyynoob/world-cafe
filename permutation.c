@@ -3,16 +3,16 @@
 #include <stdbool.h>
 #include "permutation.h"
 
-struct perm {
+static struct perm {
     short n;
-    int **result;
+    short **result;
     int resSize;
-    int res_used;
-    int *seq;   // seq[i] \in [0, n)
+    int used;
+    short *seq;   // seq[i] \in [0, n)
     unsigned checkxor;
 };
 
-static inline bool isValid(int *sequence, int seqSize, unsigned checkxor)
+static inline bool isValid(short *sequence, int seqSize, unsigned checkxor)
 {
     for (int i = 0; i < seqSize; i++)
         checkxor ^= 1u << sequence[i];
@@ -24,9 +24,9 @@ static void generate_permute(struct perm *p, int pos)
     if (pos == p->n) {   // end recursion
         if (!isValid(p->seq, p->n, p->checkxor))
             return;
-        ++(p->res_used);
+        ++(p->used);
         for (int i = 0; i < p->n; i++)
-            p->result[p->res_used][i] = p->seq[i];
+            p->result[p->used][i] = p->seq[i];
         return;
     }
 
@@ -39,12 +39,13 @@ static void generate_permute(struct perm *p, int pos)
 static struct perm *perm_init(short n, int resSize)
 {
     struct perm *p = (struct perm *) malloc(sizeof(struct perm));
+    p->n = n;
     p->resSize = resSize;
-    p->result = (int **) malloc(sizeof(int *) * resSize);
+    p->result = (short **) malloc(sizeof(short *) * resSize);
     for (int i = 0; i < resSize; i++)
-        p->result[i] = (int *) malloc(sizeof(int) * n);
-    p->res_used = -1;
-    p->seq = (int *) malloc(sizeof(int) * n);
+        p->result[i] = (short *) malloc(sizeof(short) * n);
+    p->used = -1;
+    p->seq = (short *) malloc(sizeof(short) * n);
     p->checkxor = 0;
     for (int i = 0; i < n; i++) {
         p->seq[i] = 0;
@@ -53,16 +54,16 @@ static struct perm *perm_init(short n, int resSize)
     return p;
 }
 
-/* generate permutations with elements [0, n)
+/* generate all permutations with elements [0, n)
  */
-int** permutation(short n, int* returnSize)
+short** permutation(short n, int* returnSize)
 {
     *returnSize = 1;
     for (int i = 1; i <= n; i++)
         (*returnSize) *= i;
     struct perm *p = perm_init(n, *returnSize);
     generate_permute(p, 0);
-    int **ans = p->result;
+    short **ans = p->result;
     free(p->seq);
     free(p);
     return ans;

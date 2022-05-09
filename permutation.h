@@ -1,1 +1,1 @@
-int** permutation(short n, int* returnSize);
+short** permutation(short n, int* returnSize);
