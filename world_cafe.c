@@ -1,51 +1,44 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <time.h>
 #include "permutation.h"
+#include "semi_sudoku.h"
 
-static bool isValid(const short *su[], short round, unsigned checkxor)
+short **permu;
+int permu_size;
+
+void print_matrix(short **matrix, short round)
 {
-    unsigned check;
-    for (int r = 0; r < round; r++) {
-        check = checkxor;
-        for (int c = 0; c < round; c++)
-            check ^= 1u << su[r][c];
-        if (check)
-            return false;
+    for (int i = 0; i < round; i++) {
+        for (int j = 0; j < round; j++)
+            printf("%hd ", matrix[i][j]);
+        putchar('\n');
     }
-    for (int c = 0; c < round; c++) {
-        check = checkxor;
-        for (int r = 0; r < round; r++)
-            check ^= 1u << su[r][c];
-        if (check)
-            return false;
-    }
-    return true;
-}
-
-static void printOut(const short *su[], short round)
-{
-
+    putchar('\n');
 }
 
 int main()
 {
     short round;
+    printf("round: ");
     scanf("%hd", &round);
-    int permu_size;
-    int **permu = permutation(round, &permu_size);
-    printf("%d\n", permu_size);
-    unsigned checkxor = 0;
-    for (int i = 0; i < round; i++)
-        checkxor ^= 1u << i;
-    short su[round][round];   // sudoku-like rule
-    // developing...
-    for (short r = 0; r < round; r++) {
-
-        for (short c = 0; c < round; c++) {
-            su[r][c] = 1;
-        }
+    srand(time(NULL));
+    permu = permutation(round, &permu_size);
+    for (int i = 0; i < permu_size; i++) {
+        printf("permu[%d] = ", i);
+        for (int j = 0; j < round; j++)
+            printf("%hd ", permu[i][j]);
+        putchar('\n');
     }
+    putchar('\n');
+
+    short **matrix = semi_sudoku(round);
+    print_matrix(matrix, round);
+
+    for (int i = 0; i < round; i++)
+        free(matrix[i]);
+    free(matrix);
     for (int i = 0; i < permu_size; i++)
         free(permu[i]);
     free(permu);

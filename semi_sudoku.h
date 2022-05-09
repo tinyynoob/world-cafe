@@ -1,0 +1,1 @@
+short **semi_sudoku(short round);
