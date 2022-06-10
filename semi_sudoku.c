@@ -1,7 +1,7 @@
 #include "semi_sudoku.h"
 #include <stdbool.h>
 #include <stdlib.h>
-#include <string.h>
+#include "ffs.h"
 
 extern short **permu;
 extern int permu_size;
@@ -48,7 +48,7 @@ static struct su *su_init(short round)
     return su;
 }
 
-/* generate a sudoku without skew rule
+/* Generate a sudoku without skew and block rule
  */
 short **semi_sudoku(short round)
 {
