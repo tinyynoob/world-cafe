@@ -81,20 +81,39 @@ static inline void wc_destroy(struct wc *w)
 int main()
 {
     srand(time(NULL));
-    short round;
+    short round = -1;
     printf("round (1 ~ 10): ");
-    scanf("%hd", &round);
-    while (round <= 0 || round > 10) {
-        printf("1 ~ 10 plz: ");
-        scanf("%hd", &round);
+    while (1) {
+        if (!scanf("%hd", &round)) {
+            if (getchar() == 'q')
+                return 0;
+            fprintf(stderr, "It is not a number!\n");
+            while (getchar() != '\n') {
+            }
+            printf("try again: ");
+        } else if (round <= 0 || round > 10) {
+            printf("1 ~ 10 plz: ");
+        } else {
+            break;
+        }
     }
-    int player;
+    int player = -1;
     printf("number of players: ");
-    scanf("%d", &player);
-    while (player <= 0) {
-        printf("try again: ");
-        scanf("%d", &player);
+    while (1) {
+        if (!scanf("%d", &player)) {
+            if (getchar() == 'q')
+                return 0;
+            fprintf(stderr, "It is not a number!\n");
+            while (getchar() != '\n') {
+            }
+            printf("try again: ");
+        } else if (player < 0) {
+            printf("positive plz: ");
+        } else {
+            break;
+        }
     }
+    putchar('\n');
     permu = permutation(round, &permu_size);
     FILE *f = fopen("world_cafe.tmp", "w");
     for (int count = 0; count < player + round;) {
@@ -128,6 +147,7 @@ int main()
     f = fopen("world_cafe.csv", "w");
     wc_printout_players(w, f);
     fclose(f);
+    puts("The result is successfully generated at world_cafe.csv.");
     wc_destroy(w);
     w = NULL;
     return 0;
